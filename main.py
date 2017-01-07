@@ -8,7 +8,6 @@ columnNames = ['movieID', 'userID', 'rating']
 rawData = pandas.read_csv('TrainingRatings.txt', names=columnNames,
                         dtype={'movieID': np.str, 'userID': np.str, 'rating': np.float})
 
-
 uniqueMovieID = rawData.movieID.unique()
 uniqueUserID = rawData.userID.unique()
 
