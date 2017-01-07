@@ -61,3 +61,4 @@ for i in range(0,uniqueUserID.size):
 
 print('weighting is done')
 print (datetime.datetime.now())
+print(weightMatrix[0:10][0:10])
