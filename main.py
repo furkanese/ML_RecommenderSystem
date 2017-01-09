@@ -3,6 +3,7 @@ import numpy as np
 import pandas
 import datetime
 import math
+import fillweights
 
 columnNames = ['movieID', 'userID', 'rating']
 
@@ -19,9 +20,14 @@ print('data read. parsing')
 print (datetime.datetime.now())
 uniqueMovieID = rawData.movieID.unique()
 uniqueUserID = rawData.userID.unique()
+print(uniqueMovieID.size)
+print (uniqueUserID.size)
 
 testUniqueMovieID = testRawData.movieID.unique()
 testUniqueUserID = testRawData.userID.unique()
+
+print(testUniqueMovieID.size)
+print (testUniqueUserID.size)
 
 #creating index dictionary for movie and user
 #training
@@ -42,7 +48,7 @@ userRateMeans = np.zeros([1,uniqueUserID.size],dtype = np.float)
 
 testMovieUserRatings = np.zeros([testUniqueMovieID.size,testUniqueUserID.size],dtype = np.float)
 
-weightMatrix = np.zeros([uniqueUserID.size,uniqueUserID.size],dtype = np.float)
+#weightMatrix = np.zeros([uniqueUserID.size,uniqueUserID.size],dtype = np.float)
 
 def fillMatrix(rawData,movieUserRate,movieDic,userDic):
     # filling matrix with rating info
@@ -67,6 +73,7 @@ def calcMeans(movieUserRate,userRateMean,userSize,movieSize):
     return userRateMean
 
 
+
 #train
 movieUserRatings = fillMatrix(rawData,movieUserRatings,movieDict,userDict)
 userRateMeans = calcMeans(movieUserRatings,userRateMeans,uniqueUserID.size,uniqueMovieID.size)
@@ -76,33 +83,16 @@ testMovieUserRatings = fillMatrix(testRawData,testMovieUserRatings,testMovieDict
 #filling the weight matrix
 print('Done. Filling weight matrix')
 print (datetime.datetime.now())
+weightMatrix = fillweights.fillWeights(movieUserRatings,userRateMeans,uniqueUserID.size,uniqueMovieID.size)
+print (datetime.datetime.now())
+print(weightMatrix[:10,:10])
 
-for i in range(0,uniqueUserID.size):
-    if (i % 100) == 0:
-        print(str(i) + 'th user')
-    for j in range((i+1),uniqueUserID.size):
-        totUpper = 0
-        totBottomActive = 0
-        totBottomOther = 0
-        for k in range(0,uniqueMovieID.size):
-            activeUsr = movieUserRatings[k][i]
-            otherUsr = movieUserRatings[k][j]
-            if activeUsr != 0 and otherUsr != 0:
-                totUpper += (activeUsr - userRateMeans[0][i]) * (otherUsr - userRateMeans[0][j])
-                # did not used pow() for computational strain
-                totBottomActive += (activeUsr - userRateMeans[0][i]) * (activeUsr - userRateMeans[0][i])
-                totBottomOther += (otherUsr - userRateMeans[0][j]) * (otherUsr - userRateMeans[0][j])
-        temp = math.sqrt(totBottomActive * totBottomOther)
-        if temp != 0:
-            weightMatrix[i][j] = totUpper / temp
-            weightMatrix[j][i] = weightMatrix[i][j]
-
+'''
 print('weighting is done')
 print (datetime.datetime.now())
 #print(weightMatrix[:10,:10])
 
 
-'''
 np.savetxt('weights.csv',weightMatrix,delimiter=',')
 print('saved the weights')
 print (datetime.datetime.now())
