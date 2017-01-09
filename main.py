@@ -19,9 +19,14 @@ print('data read. parsing')
 print (datetime.datetime.now())
 uniqueMovieID = rawData.movieID.unique()
 uniqueUserID = rawData.userID.unique()
+print(uniqueMovieID.size)
+print (uniqueUserID.size)
 
 testUniqueMovieID = testRawData.movieID.unique()
 testUniqueUserID = testRawData.userID.unique()
+
+print(testUniqueMovieID.size)
+print (testUniqueUserID.size)
 
 #creating index dictionary for movie and user
 #training
@@ -100,7 +105,6 @@ for i in range(0,uniqueUserID.size):
 print('weighting is done')
 print (datetime.datetime.now())
 #print(weightMatrix[:10,:10])
-
 
 '''
 np.savetxt('weights.csv',weightMatrix,delimiter=',')
