@@ -67,7 +67,7 @@ def calcMeans(movieUserRate,userRateMean,userSize,movieSize):
         count = 0
         tot = 0
         for j in range(0,movieSize):
-            if movieUserRate[j][i] != 0:
+            if movieUserRate[j][i] > 0:
                 count += 1
                 tot += movieUserRatings[j][i]
         userRateMean[0][i] = tot / count
@@ -76,7 +76,7 @@ def calcMeans(movieUserRate,userRateMean,userSize,movieSize):
 
 
 #train
-movieUserRatings = fillMatrix(rawData,movieUserRatings,movieDict,userDict)
+movieUserRatings,trainTotalVote = fillMatrix(rawData,movieUserRatings,movieDict,userDict)
 userRateMeans = calcMeans(movieUserRatings,userRateMeans,uniqueUserID.size,uniqueMovieID.size)
 
 
@@ -90,7 +90,7 @@ weightMatrix = fillweights.fillWeights(movieUserRatings,userRateMeans,uniqueUser
 
 print('weighting is done')
 print (datetime.datetime.now())
-#print(weightMatrix[:10,:10])
+print(weightMatrix[:10,:10])
 
 print('taking predictions')
 
@@ -103,44 +103,48 @@ neighbourSize = 3
 prediction = np.zeros([testTotalVote], dtype = [('movName','|S10'),('userName','|S10'),('pred','f4')])
 
 cntr = 0
+biggerthan4 = 0
+
 for j in range(0,testUniqueUserID.size):
     currentUser = userDict[testIndexToUser[j]]
-    sortWeights = np.argsort(weightMatrix[currentUser][:])
+    # sort weights in descending order and take necessary size
+    sortWeights = np.argsort(weightMatrix[currentUser][:])[::-1][:neighbourSize]
+    if(j < 1000):
+        print(sortWeights)
     for i in range(0,testUniqueMovieID.size):
         currentMovie = movieDict[testIndexToMovie[i]]
-        for k in range(0,neighbourSize):
-            #taking most similar users
-            mostSim = int(sortWeights[k])
-            totUp += (movieUserRatings[i][mostSim] - userRateMeans[0][mostSim]) * weightMatrix[currentUser][mostSim]
-            totDown += weightMatrix[currentUser][mostSim]
-        if totDown != 0:
-            pred = userRateMeans[0][currentUser] + (totUp / totDown)
-        else:
-            pred = userRateMeans[0][currentUser]
-        a = ('%f' % testIndexToMovie[i]).rstrip('0').rstrip('.')
-        b = ('%f' % testIndexToUser[i]).rstrip('0').rstrip('.')
-        prediction[cntr] = (a,b,pred)
-        '''
-        prediction[cntr][0] = testIndexToMovie[i]
-        prediction[cntr][1] = testIndexToUser[j]
-        if totDown > 0:
-            prediction[cntr][2] = userRateMeans[0][currentUser] + (totUp / totDown)
-        else:
-            prediction[cntr][2] = userRateMeans[0][currentUser]
-        '''
-        totDown = 0
-        totUp = 0
-        cntr += 1
-
-
-np.savetxt('predictions.txt',prediction,delimiter=',')
+        if testMovieUserRatings[i][j] > 0 :
+            # getting prediction for watched movie
+            for k in range(0,neighbourSize):
+                # taking most similar users
+                mostSim = sortWeights[k]
+                if mostSim == i:
+                    print(str(i) + ' IS SAME')
+                totUp += (movieUserRatings[i][mostSim] - userRateMeans[0][mostSim]) * weightMatrix[currentUser][mostSim]
+                totDown += weightMatrix[currentUser][mostSim]
+            if totDown > 0:
+                pred = userRateMeans[0][currentUser] + (totUp / totDown)
+            else:
+                pred = userRateMeans[0][currentUser]
+            if pred >= 4:
+                biggerthan4 += 1
+            a = testIndexToMovie[i]
+            b = testIndexToUser[j]
+            prediction[cntr] = (a,b,pred)
+            totDown = 0
+            totUp = 0
+            cntr += 1
+# sorting by movie
+inds = np.argsort(prediction['movName'])
+np.take(prediction,inds,out = prediction)
+np.savetxt('predictions.txt',prediction,delimiter=',',fmt = '%s,%s,%f')
 print('saved the prediction')
 print (datetime.datetime.now())
+print(biggerthan4)
 
 
 
-'''
-np.savetxt('weights.csv',weightMatrix,delimiter=',')
+np.savetxt('weights.csv',weightMatrix[:1000][:1000],delimiter=',')
 print('saved the weights')
 print (datetime.datetime.now())
-'''
+
