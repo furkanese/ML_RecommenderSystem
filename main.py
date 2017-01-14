@@ -118,8 +118,6 @@ for j in range(0,testUniqueUserID.size):
             for k in range(0,neighbourSize):
                 # taking most similar users
                 mostSim = sortWeights[k]
-                if mostSim == i:
-                    print(str(i) + ' IS SAME')
                 totUp += (movieUserRatings[i][mostSim] - userRateMeans[0][mostSim]) * weightMatrix[currentUser][mostSim]
                 totDown += weightMatrix[currentUser][mostSim]
             if totDown > 0:

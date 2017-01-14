@@ -13,6 +13,8 @@ def fillWeights(np.ndarray[DTYPE_t, ndim=2] movieUserRatings,np.ndarray[DTYPE_t,
     cdef int i,j
     cdef float temp,totUpper,totBottomActive,totBottomOther,activeUsr,otherUsr
     cdef np.ndarray[DTYPE_t, ndim=2] weightMatrix = np.zeros([userSize,userSize],dtype = DTYPE)
+    print(userSize)
+    print(movieSize)
     for i in range(0,(userSize-1)):
         if (i % 1000) == 0:
             print(str(i) + 'th user')
