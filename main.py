@@ -74,11 +74,11 @@ def calcMeans(movieUserRate,userRateMean,userSize,movieSize):
     return userRateMean
 
 
-
 #train
 movieUserRatings,trainTotalVote = fillMatrix(rawData,movieUserRatings,movieDict,userDict)
 userRateMeans = calcMeans(movieUserRatings,userRateMeans,uniqueUserID.size,uniqueMovieID.size)
 
+print(userRateMeans[0][:10])
 
 #test
 testMovieUserRatings,testTotalVote = fillMatrix(testRawData,testMovieUserRatings,testMovieDict,testUserDict)
@@ -90,7 +90,7 @@ weightMatrix = fillweights.fillWeights(movieUserRatings,userRateMeans,uniqueUser
 
 print('weighting is done')
 print (datetime.datetime.now())
-print(weightMatrix[:10,:10])
+#print(weightMatrix[:10,:10])
 
 print('taking predictions')
 
@@ -98,19 +98,17 @@ currentUser = 0
 currentMovie = 0
 totUp = 0
 totDown = 0
-neighbourSize = 3
+neighbourSize = 5
 
 prediction = np.zeros([testTotalVote], dtype = [('movName','|S10'),('userName','|S10'),('pred','f4')])
 
 cntr = 0
-biggerthan4 = 0
-
 for j in range(0,testUniqueUserID.size):
     currentUser = userDict[testIndexToUser[j]]
     # sort weights in descending order and take necessary size
     sortWeights = np.argsort(weightMatrix[currentUser][:])[::-1][:neighbourSize]
-    if(j < 1000):
-        print(sortWeights)
+    if j < 100:
+        print(str(weightMatrix[currentUser][sortWeights[0]]) + ' ' + str(weightMatrix[currentUser][sortWeights[1]]) + ' ' + str(weightMatrix[currentUser][sortWeights[2]]))
     for i in range(0,testUniqueMovieID.size):
         currentMovie = movieDict[testIndexToMovie[i]]
         if testMovieUserRatings[i][j] > 0 :
@@ -120,12 +118,10 @@ for j in range(0,testUniqueUserID.size):
                 mostSim = sortWeights[k]
                 totUp += (movieUserRatings[i][mostSim] - userRateMeans[0][mostSim]) * weightMatrix[currentUser][mostSim]
                 totDown += weightMatrix[currentUser][mostSim]
-            if totDown > 0:
+            if totDown != 0:
                 pred = userRateMeans[0][currentUser] + (totUp / totDown)
             else:
                 pred = userRateMeans[0][currentUser]
-            if pred >= 4:
-                biggerthan4 += 1
             a = testIndexToMovie[i]
             b = testIndexToUser[j]
             prediction[cntr] = (a,b,pred)
@@ -133,16 +129,18 @@ for j in range(0,testUniqueUserID.size):
             totUp = 0
             cntr += 1
 # sorting by movie
+
 inds = np.argsort(prediction['movName'])
 np.take(prediction,inds,out = prediction)
 np.savetxt('predictions.txt',prediction,delimiter=',',fmt = '%s,%s,%f')
 print('saved the prediction')
 print (datetime.datetime.now())
-print(biggerthan4)
 
 
-
+'''
 np.savetxt('weights.csv',weightMatrix[:1000][:1000],delimiter=',')
 print('saved the weights')
 print (datetime.datetime.now())
+
+'''
 
