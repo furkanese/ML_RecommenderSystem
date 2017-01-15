@@ -73,6 +73,7 @@ print (datetime.datetime.now())
 totError = 0
 cntr = 0
 biggerThan4 = 0
+totRmse = 0
 
 for i in range (0,testUniqueMovieID.size):
     predMovInd = predictMovieDict[testIndexToMovie[i]]
@@ -80,15 +81,19 @@ for i in range (0,testUniqueMovieID.size):
         predUsrInd = predictUserDict[testIndexToUser[j]]
         if testMovieUserRatings[i][j] != 0 and predictMovieUserRatings[predMovInd][predUsrInd] != 0:
             totError += abs(predictMovieUserRatings[predMovInd][predUsrInd] - testMovieUserRatings[i][j])
+            totRmse += (predictMovieUserRatings[predMovInd][predUsrInd] - testMovieUserRatings[i][j]) * (predictMovieUserRatings[predMovInd][predUsrInd] - testMovieUserRatings[i][j])
             cntr += 1
         if predictMovieUserRatings[predMovInd][predUsrInd] >= 4:
             biggerThan4 += 1
 
-print(totError)
-print(cntr)
+#print(totError)
+#print(cntr)
 
 print('Mean Absolute Error: ')
 print(totError / cntr)
+print('RMSE')
+print(math.sqrt(totRmse / cntr))
+
 print('Predictions bigger than 4: ' , str(biggerThan4))
 cntr = 0
 prediction = np.zeros([biggerThan4], dtype = [('movName','i'),('userName','|S10')])

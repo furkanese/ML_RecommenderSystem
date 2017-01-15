@@ -8,7 +8,7 @@ ctypedef np.float_t DTYPE_t
 cdef extern from "math.h":
     double sqrt(double m)
 
-def fillWeights(np.ndarray[DTYPE_t, ndim=2] movieUserRatings,np.ndarray[DTYPE_t, ndim=2] userRateMeans,int userSize, int movieSize):
+def fillWeights(np.ndarray[DTYPE_t, ndim=2] movieUserRatings,np.ndarray[DTYPE_t, ndim=2] userRateMeans,int userSize,int movieSize):
 
     cdef int i,j
     cdef float temp,totUpper,totBottomActive,totBottomOther,activeUsr,otherUsr
